@@ -1,0 +1,21 @@
+{
+ "name": "Chess Pgn Reviser",
+ "description": "Enter your project description",
+ "author": {
+  "name": "Laurent Bernabe",
+  "email": "laurent.bernabe@gmail.com"
+ },
+ "version": "0.1.0",
+ "binaryname": "chess-pgn-reviser",
+ "frontend": {
+  "dir": "frontend",
+  "install": "npm install",
+  "build": "npm run build",
+  "bridge": "src",
+  "serve": "npm run serve"
+ },
+ "WailsVersion": "",
+ "CrossCompile": false,
+ "Platform": "",
+ "Architecture": ""
+}
