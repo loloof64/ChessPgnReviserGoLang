@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="opened" persistent max-width="650">
+  <v-dialog v-model="opened" persistent max-width="750">
     <v-card>
       <v-card-title class="headline">{{title}}</v-card-title>
       <slot></slot>
@@ -54,6 +54,9 @@ export default {
     methods: {
         open() {
             this.opened = true;
+        },
+        close() {
+          this.opened = false;
         },
         closeWithAction() {
           this.opened = false;

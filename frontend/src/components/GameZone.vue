@@ -1,5 +1,5 @@
 <template>
-  <v-row fluid class="p-4 white">
+  <v-row fluid class="white">
     <v-col>
       <loloof64-chessboard
         size="600"
@@ -41,6 +41,14 @@
       <v-card-text>{{$t('modals.stopGame.text')}}</v-card-text>
     </simple-modal-dialog>
 
+    <simple-modal-dialog ref="errorDialog" :title="errorDialogTitle">
+      <v-card-text>{{errorDialogText}}</v-card-text>
+    </simple-modal-dialog>
+
+    <pgn-game-selector ref="pgnGameSelector" :confirmAction="loadPgn" :pgnGames="pgnGames" />
+
+    <v-progress-circular indeterminate size="300" width="20" color="light-blue" v-if="loadingPgn"></v-progress-circular>
+
     <simple-snack-bar ref="snackBar" />
   </v-row>
 </template>
@@ -49,6 +57,9 @@
 import SimpleModalDialog from "./SimpleModalDialog";
 import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
+import PgnGameSelector from "./PgnGameSelector";
+
+const pgnParser = require("pgn-parser");
 
 /*
     History should be something like (here simplified)
@@ -102,7 +113,11 @@ export default {
     return {
       board_reversed: false,
       history: [],
-      orderedHistory: []
+      orderedHistory: [],
+      errorDialogTitle: "",
+      errorDialogText: "",
+      pgnGames: [],
+      loadingPgn: false
     };
   },
   methods: {
@@ -119,17 +134,48 @@ export default {
       }
     },
     doStartNewGame() {
-      const boardComponent = document.querySelector("loloof64-chessboard");
-      boardComponent.newGame();
+      ///////////////////////////////////////////////////////////////////////////////
+      // Production mode, use window.backend.TextFileManager.GetTextFileContent()
+      ///////////////////////////////////////////////////////////////////////////////
+      window.backend.TextFileManager.GetTextFileContentWithPathProviden(
+        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
+      )
+        .then(content => {
+          this.loadingPgn = true;
+          
+          const asyncCode = new Promise((resolve, reject) => {
+            try {
+              const pgnGames = pgnParser.parse(content);
+              resolve(pgnGames);
+            } catch (error) {
+              reject(error);
+            }
+          });
 
-      this.$refs["history"].clearSelection();
-      this.history = [];
-      this.updateOrderedHistory();
+          asyncCode.then((pgnGames) => {
+            this.loadingPgn = false;
+            this.pgnGames = pgnGames;
+            this.loadingPgn = false;
+              this.$refs["pgnGameSelector"].open(this.pgnGames);
+          }).catch((error) => {
+            this.loadingPgn = false;
+            console.error(error);
+              this.errorDialogTitle = this.$i18n.t("modals.error.title");
+              this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
+              this.$refs["errorDialog"].open();
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          this.errorDialogTitle = this.$i18n.t("modals.error.title");
+          this.errorDialogText = this.$i18n.t("modals.error.file_reading");
+          this.$refs["errorDialog"].open();
+        });
     },
     doStopGame() {
       const boardComponent = document.querySelector("loloof64-chessboard");
       boardComponent.stop();
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     handleCheckmate(event) {
       const whiteTurnBeforeMove = event.detail.whiteTurnBeforeMove;
@@ -138,27 +184,27 @@ export default {
         : this.$i18n.t("gameFinished.blackSide");
       const message = this.$i18n.t("gameFinished.checkmate", { side });
       this.$refs["snackBar"].open(message);
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     handleStalemate() {
       const message = this.$i18n.t("gameFinished.stalemate");
       this.$refs["snackBar"].open(message);
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     handlePerpetualDraw() {
       const message = this.$i18n.t("gameFinished.perpetualDraw");
       this.$refs["snackBar"].open(message);
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     handleMissingMaterialDraw() {
       const message = this.$i18n.t("gameFinished.missingMaterialDraw");
       this.$refs["snackBar"].open(message);
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     handleFiftyMovesDraw() {
       const message = this.$i18n.t("gameFinished.fiftyMovesDraw");
       this.$refs["snackBar"].open(message);
-      this.$refs['history'].selectLastMove();
+      this.$refs["history"].selectLastMove();
     },
     updateOrderedHistory() {
       let currentMoveNumber = undefined;
@@ -210,6 +256,25 @@ export default {
         const historyComponent = this.$refs["history"];
         historyComponent.confirmPositionSet(evt);
       }
+    },
+    loadPgn(index) {
+      const game = this.pgnGames[index];
+      if (!game) {
+        console.error(
+          "Out of bounds ! Requested game " +
+            index +
+            ", but size is " +
+            this.pgnGames.length
+        );
+        return;
+      }
+
+      const boardComponent = document.querySelector("loloof64-chessboard");
+      boardComponent.newGame();
+
+      this.$refs["history"].clearSelection();
+      this.history = [];
+      this.updateOrderedHistory();
     }
   },
   computed: {
@@ -220,11 +285,20 @@ export default {
   components: {
     "simple-modal-dialog": SimpleModalDialog,
     "simple-snack-bar": SimpleSnackBar,
-    history: MovesHistory
+    history: MovesHistory,
+    "pgn-game-selector": PgnGameSelector
   }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.v-progress-circular {
+  position: absolute;
+  z-index: 5;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+}
 </style>

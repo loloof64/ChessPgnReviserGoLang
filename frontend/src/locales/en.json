@@ -25,6 +25,14 @@
         },
         "promotionDialog": {
             "title": "Select the promotion piece"
+        },
+        "pgnSelection": {
+            "title": "Choose the game from the PGN :"
+        },
+        "error": {
+            "title": "Error",
+            "file_reading": "Failed to read selected file !",
+            "pgn_parsing": "Failed to parse pgn content !"
         }
     },
     "gameFinished": {
@@ -47,6 +55,14 @@
             "last": "Last position",
             "previous": "Previous position",
             "next": "Next position"
+        }
+    },
+    "pgn": {
+        "buttons": {
+            "first": "First game",
+            "previous": "Previous game",
+            "next": "Next game",
+            "last": "Last game"
         }
     }
 }

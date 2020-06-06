@@ -25,6 +25,14 @@
         },
         "promotionDialog": {
             "title": "Veuillez choisir la pièce de promotion"
+        },
+        "pgnSelection": {
+            "title": "Veuillez choisir la partie à partir du PGN :"
+        },
+        "error": {
+            "title": "Error",
+            "file_reading": "Failed to read selected file !",
+            "pgn_parsing": "Echec d'interprétation du contenu du PGN !"
         }
     },
     "gameFinished": {
@@ -47,6 +55,14 @@
             "last": "Dernière position",
             "previous": "Position précédente",
             "next": "Position suivante"
+        }
+    },
+    "pgn": {
+        "buttons": {
+            "first": "Première partie",
+            "previous": "Partie précédente",
+            "next": "Partie suivante",
+            "last": "Dernière partie"
         }
     }
 }

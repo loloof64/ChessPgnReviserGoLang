@@ -10,6 +10,7 @@
   "dependencies": {
     "@loloof64/chessboard-component": "^0.15.10",
     "@wailsapp/runtime": "^1.0.10",
+    "chess.js": "^0.10.3",
     "core-js": "^3.6.4",
     "regenerator-runtime": "^0.13.3",
     "vue": "^2.6.11",
