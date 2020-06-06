@@ -23,5 +23,14 @@
             "title": "Stop current game ?",
             "text": "Do you want really want to stop current game ?"
         }
+    },
+    "gameFinished": {
+        "whiteSide": "White",
+        "blackSide": "Black",
+        "checkmate": "{side} has won by checkmate.",
+        "stalemate": "Stalemate.",
+        "perpetualDraw": "Draw by 3-folds repetition.",
+        "missingMaterialDraw": "Draw by missing material.",
+        "fiftyMovesDraw": "Draw by the 50 moves rule."
     }
 }
