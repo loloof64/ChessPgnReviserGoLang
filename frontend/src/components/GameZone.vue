@@ -59,7 +59,7 @@ import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
 
-const pgnParser = require("pgn-parser");
+import {parsePgn} from './PgnParser.worker';
 
 /*
     History should be something like (here simplified)
@@ -140,10 +140,10 @@ export default {
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
         "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
       )
-        .then(content => {
+        .then(async content => {
           try {
             this.loadingPgn = true;
-            this.pgnGames = pgnParser.parse(content);
+            this.pgnGames = await parsePgn(content);
             this.loadingPgn = false;
             this.$refs["pgnGameSelector"].open(this.pgnGames);
           } catch (error) {
