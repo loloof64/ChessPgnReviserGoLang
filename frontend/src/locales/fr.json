@@ -22,6 +22,9 @@
         "stopGame": {
             "title": "Arrêter la partie ?",
             "text": "Souhaitez-vous vraiment arrêter la partie en cours ?"
+        },
+        "promotionDialog": {
+            "title": "Veuillez choisir la pièce de promotion"
         }
     },
     "gameFinished": {

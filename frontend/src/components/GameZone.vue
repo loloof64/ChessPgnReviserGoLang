@@ -8,6 +8,7 @@
       white_player_human="true"
       black_player_human="true"
       :reversed="board_reversed"
+      :promotion_dialog_title="promotion_dialog_title"
 
       @checkmate="handleCheckmate($event)"
       @stalemate="handleStalemate()"
@@ -92,10 +93,15 @@ export default {
       this.$refs['snackBar'].open(message);
     }
   },
+  computed: {
+    promotion_dialog_title() {
+      return this.$i18n.t('modals.promotionDialog.title');
+    }
+  },
   components: {
     "simple-modal-dialog": SimpleModalDialog,
     "simple-snack-bar": SimpleSnackBar,
-  }
+  },
 };
 </script>
 

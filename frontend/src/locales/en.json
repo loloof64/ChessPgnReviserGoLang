@@ -22,6 +22,9 @@
         "stopGame": {
             "title": "Stop current game ?",
             "text": "Do you want really want to stop current game ?"
+        },
+        "promotionDialog": {
+            "title": "Select the promotion piece"
         }
     },
     "gameFinished": {
