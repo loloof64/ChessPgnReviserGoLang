@@ -35,5 +35,18 @@
         "perpetualDraw": "Draw by 3-folds repetition.",
         "missingMaterialDraw": "Draw by missing material.",
         "fiftyMovesDraw": "Draw by the 50 moves rule."
+    },
+    "history": {
+        "header": {
+            "moveNumber": "Number",
+            "whiteSide": "White",
+            "blackSide": "Black"
+        },
+        "buttons": {
+            "first": "First position",
+            "last": "Last position",
+            "previous": "Previous position",
+            "next": "Next position"
+        }
     }
 }

@@ -35,5 +35,18 @@
         "perpetualDraw": "Nulle par triple répétition.",
         "missingMaterialDraw": "Nulle par manque de matériel.",
         "fiftyMovesDraw": "Nulle par la règle des 50 coups."
+    },
+    "history": {
+        "header": {
+            "moveNumber": "Coup",
+            "whiteSide": "Blancs",
+            "blackSide": "Noirs"
+        },
+        "buttons": {
+            "first": "Première position",
+            "last": "Dernière position",
+            "previous": "Position précédente",
+            "next": "Position suivante"
+        }
     }
 }
