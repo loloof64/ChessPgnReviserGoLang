@@ -1,33 +1,12 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer" clipped fixed app>
-      <v-list dense>
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-view-dashboard</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-settings</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Settings</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-app-bar app fixed clipped-left>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>Application</v-toolbar-title>
+    <v-app-bar app fixed clipped-left class="grey">
+
     </v-app-bar>
     <v-content>
       <v-container fluid class="px-0">
         <v-layout justify-center align-center class="px-0">
-          <hello-world></hello-world>
+          <game-zone></game-zone>
         </v-layout>
       </v-container>
     </v-content>
@@ -38,14 +17,15 @@
 </template>
 
 <script>
-  import HelloWorld from "./components/HelloWorld.vue"
+  require('@loloof64/chessboard-component/dist')
+  import GameZone from "./components/GameZone.vue"
 
   export default {
     data: () => ({
       drawer: false
     }),
     components: {
-      HelloWorld
+      GameZone
     },
     props: {
       source: String
@@ -54,7 +34,5 @@
 </script>
 
 <style>
-  .logo {
-    width: 16em;
-  }
+  
 </style>
