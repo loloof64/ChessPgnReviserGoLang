@@ -26,6 +26,12 @@ module.exports = {
       .options({
         limit: limit,
       });
+      config.module
+      .rule('worker')
+      .test(/\.worker\.js$/i)
+      .use('comlink-loader')
+      .loader('comlink-loader')
+      .options({limit});
   },
   css: cssConfig,
   configureWebpack: {

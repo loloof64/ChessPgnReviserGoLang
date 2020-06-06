@@ -141,29 +141,17 @@ export default {
         "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
       )
         .then(content => {
-          this.loadingPgn = true;
-          
-          const asyncCode = new Promise((resolve, reject) => {
-            try {
-              const pgnGames = pgnParser.parse(content);
-              resolve(pgnGames);
-            } catch (error) {
-              reject(error);
-            }
-          });
-
-          asyncCode.then((pgnGames) => {
+          try {
+            this.loadingPgn = true;
+            this.pgnGames = pgnParser.parse(content);
             this.loadingPgn = false;
-            this.pgnGames = pgnGames;
-            this.loadingPgn = false;
-              this.$refs["pgnGameSelector"].open(this.pgnGames);
-          }).catch((error) => {
-            this.loadingPgn = false;
+            this.$refs["pgnGameSelector"].open(this.pgnGames);
+          } catch (error) {
             console.error(error);
-              this.errorDialogTitle = this.$i18n.t("modals.error.title");
-              this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
-              this.$refs["errorDialog"].open();
-          });
+            this.errorDialogTitle = this.$i18n.t("modals.error.title");
+            this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
+            this.$refs["errorDialog"].open();
+          }
         })
         .catch(error => {
           console.error(error);
