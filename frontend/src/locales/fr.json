@@ -1,0 +1,27 @@
+{
+    "menu": {
+        "newGame": {
+            "tooltip": "Nouvelle partie"
+        },
+        "stopGame": {
+            "tooltip": "Arrêter la partie"
+        },
+        "reverseBoard": {
+            "tooltip": "Tourner l'échiquier"
+        }
+    },
+    "modals": {
+        "global": {
+            "okButton": "OK",
+            "cancelButton": "Cancel"
+        },
+        "newGame": {
+            "title": "Démarrer une nouvelle partie ?",
+            "text": "Souhaitez-vous vraiment démarrer une nouvelle partie ?"
+        },
+        "stopGame": {
+            "title": "Arrêter la partie ?",
+            "text": "Souhaitez-vous vraiment arrêter la partie en cours ?"
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "menu": {
+        "newGame": {
+            "tooltip": "New game"
+        },
+        "stopGame": {
+            "tooltip": "Stop game"
+        },
+        "reverseBoard": {
+            "tooltip": "Reverse board"
+        }
+    },
+    "modals": {
+        "global": {
+            "okButton": "OK",
+            "cancelButton": "Cancel"
+        },
+        "newGame": {
+            "title": "Start new game ?",
+            "text": "Do you want really want to start a new game ?"
+        },
+        "stopGame": {
+            "title": "Stop current game ?",
+            "text": "Do you want really want to stop current game ?"
+        }
+    }
+}

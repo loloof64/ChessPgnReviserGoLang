@@ -1,9 +1,24 @@
 <template>
   <v-app id="inspire">
     <v-app-bar app fixed clipped-left class="grey">
-      <img src="./assets/images/start.png" class="toolbarButton" @click="newGame()" />
-      <img src="./assets/images/reverse.png" class="toolbarButton" @click="toggleBoardSide()" />
-      <img src="./assets/images/stop.png" class="toolbarButton" @click="stopGame()" />
+      <img
+        src="./assets/images/start.png"
+        class="toolbarButton"
+        @click="newGame()"
+        :title="$t('menu.newGame.tooltip')"
+      />
+      <img
+        src="./assets/images/reverse.png"
+        class="toolbarButton"
+        @click="toggleBoardSide()"
+        :title="$t('menu.reverseBoard.tooltip')"
+      />
+      <img
+        src="./assets/images/stop.png"
+        class="toolbarButton"
+        @click="stopGame()"
+        :title="$t('menu.stopGame.tooltip')"
+      />
     </v-app-bar>
     <v-content class="white">
       <v-container fluid class="px-0">
@@ -19,31 +34,33 @@
 </template>
 
 <script>
-  require('@loloof64/chessboard-component/dist')
-  import GameZone from "./components/GameZone.vue"
+import GameZone from "./components/GameZone.vue";
 
-  export default {
-    data: () => ({
-      drawer: false
-    }),
-    components: {
-      GameZone
+export default {
+  data: () => ({
+    drawer: false
+  }),
+  components: {
+    GameZone
+  },
+  props: {
+    source: String
+  },
+  methods: {
+    toggleBoardSide() {
+      this.$refs["game_zone"].reverseBoard();
     },
-    props: {
-      source: String
+    newGame() {
+      this.$refs["game_zone"].requestStartNewGame();
     },
-    methods: {
-      toggleBoardSide() {
-        this.$refs['game_zone'].reverseBoard();
-      },
-      newGame() {
-        this.$refs['game_zone'].startNewGame();
-      },
-      stopGame() {
-        this.$refs['game_zone'].stopGame();
-      }
+    stopGame() {
+      this.$refs["game_zone"].requestStopGame();
     }
+  },
+  mounted() {
+    this.$i18n.locale = navigator.language.substring(0, 2);
   }
+};
 </script>
 
 <style>
