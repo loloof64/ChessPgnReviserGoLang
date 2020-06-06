@@ -3,14 +3,14 @@
     <v-app-bar app fixed clipped-left class="grey">
 
     </v-app-bar>
-    <v-content>
+    <v-content class="white">
       <v-container fluid class="px-0">
         <v-layout justify-center align-center class="px-0">
           <game-zone></game-zone>
         </v-layout>
       </v-container>
     </v-content>
-    <v-footer app fixed>
+    <v-footer app fixed class="grey">
       <span style="margin-left:1em">&copy; Laurent Bernabe - 2020</span>
     </v-footer>
   </v-app>
