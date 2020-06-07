@@ -45,7 +45,11 @@
       <v-card-text>{{errorDialogText}}</v-card-text>
     </simple-modal-dialog>
 
-    <pgn-game-selector ref="pgnGameSelector" :confirmAction="loadPgn" />
+    <pgn-game-selector
+      ref="pgnGameSelector"
+      :confirmAction="loadPgn"
+      @error="handlePgnLoadingError"
+    />
 
     <v-progress-circular indeterminate size="300" width="20" color="light-blue" v-if="loadingPgn"></v-progress-circular>
 
@@ -58,7 +62,7 @@ import SimpleModalDialog from "./SimpleModalDialog";
 import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
-import splitPgn from './PgnSplitter.worker';
+import splitPgn from "./PgnSplitter.worker";
 
 import pgnReader from "../libs/pgn_parser/pgn";
 
@@ -139,23 +143,23 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
+        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/ANdersson.pgn"
       )
         .then(async content => {
-            this.loadingPgn = true;
-            const pgnGamesContents = await splitPgn(content);
+          this.loadingPgn = true;
+          const pgnGamesContents = await splitPgn(content);
 
-            if (pgnGamesContents.length === 0) {
-              this.loadingPgn = false;
-              this.errorDialogTitle = this.$i18n.t("modals.noGameInPgn.title");
-              this.errorDialogText = this.$i18n.t("modals.noGameInPgn.text");
-              this.$refs["errorDialog"].open();
-              return;
-            }
-
+          if (pgnGamesContents.length === 0) {
             this.loadingPgn = false;
-            this.pgnGamesContents = pgnGamesContents;
-            this.$refs["pgnGameSelector"].open(this.pgnGamesContents);
+            this.errorDialogTitle = this.$i18n.t("modals.noGameInPgn.title");
+            this.errorDialogText = this.$i18n.t("modals.noGameInPgn.text");
+            this.$refs["errorDialog"].open();
+            return;
+          }
+
+          this.loadingPgn = false;
+          this.pgnGamesContents = pgnGamesContents;
+          this.$refs["pgnGameSelector"].open(this.pgnGamesContents);
         })
         .catch(error => {
           console.error(error);
@@ -261,17 +265,25 @@ export default {
         return;
       }
 
-      const loader = new pgnReader({pgn: gameStr});
+      const loader = new pgnReader({ pgn: gameStr });
       const result = loader.load_pgn();
       const startupPosition = result.startupPosition;
 
       const boardComponent = document.querySelector("loloof64-chessboard");
-      startupPosition ? boardComponent.newGame(startupPosition) : boardComponent.newGame();
+      startupPosition
+        ? boardComponent.newGame(startupPosition)
+        : boardComponent.newGame();
 
       this.$refs["history"].clearSelection();
       this.history = [];
       this.updateOrderedHistory();
     },
+    handlePgnLoadingError(error) {
+      console.error(error);
+      this.errorDialogTitle = this.$i18n.t("modals.error.title");
+      this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
+      this.$refs["errorDialog"].open();
+    }
   },
   computed: {
     promotion_dialog_title() {

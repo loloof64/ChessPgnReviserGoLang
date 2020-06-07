@@ -106,7 +106,7 @@ export default {
       selectedPgnBlack: "",
       selectedPgnSite: "",
       selectedPgnDate: "",
-      selectedPgnEvent: "",
+      selectedPgnEvent: ""
     };
   },
   methods: {
@@ -140,30 +140,34 @@ export default {
       this.previewPgn();
     },
     previewPgn: function() {
-      if (this.selectedPgnIndex > this.pgnsArray.length) return;
-      const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
-      const loader = new pgnReader({pgn: selectedPgnContent});
-      const gameData = loader.load_pgn();
-      ////////////////////////////////
-      console.log(gameData);
-      ///////////////////////////////////
-      const startupPosition = gameData.startupPosition;
-      this.selectedPgnWhite = gameData.headers["White"];
-      this.selectedPgnBlack = gameData.headers["Black"];
-      this.selectedPgnSite = gameData.headers["Site"];
-      this.selectedPgnDate = gameData.headers["Date"];
-      this.selectedPgnEvent = gameData.headers["Event"];
-      const playerHasBlack = startupPosition.split(" ")[1] !== "w";
-      this.previewBoardReversed = playerHasBlack;
-      const previewComponent = this.$refs["previewBoard"];
-      previewComponent.newGame(startupPosition);
+      try {
+        if (this.selectedPgnIndex > this.pgnsArray.length) return;
+        const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
+        const loader = new pgnReader({ pgn: selectedPgnContent });
+        const gameData = loader.load_pgn();
+        ////////////////////////////////
+        console.log(gameData);
+        ///////////////////////////////////
+        const startupPosition = gameData.startupPosition;
+        this.selectedPgnWhite = gameData.headers["White"];
+        this.selectedPgnBlack = gameData.headers["Black"];
+        this.selectedPgnSite = gameData.headers["Site"];
+        this.selectedPgnDate = gameData.headers["Date"];
+        this.selectedPgnEvent = gameData.headers["Event"];
+        const playerHasBlack = startupPosition.split(" ")[1] !== "w";
+        this.previewBoardReversed = playerHasBlack;
+        const previewComponent = this.$refs["previewBoard"];
+        previewComponent.newGame(startupPosition);
+      } catch (error) {
+        this.$emit('error', error);
+      }
     },
     handleConfirm() {
       this.$refs["root"].close();
       this.confirmAction(this.selectedPgnIndex);
     },
     handleNumericalSelection(event) {
-      const ENTER_KEY = 'Enter';
+      const ENTER_KEY = "Enter";
       const numericalSelectionComponent = document.querySelector(
         "#numericalGameSelection"
       );
@@ -175,7 +179,6 @@ export default {
           const inBounds =
             selectedGameIndex >= 0 && selectedGameIndex < this.pgnsArray.length;
           if (inBounds) {
-
             this.selectedPgnIndex = selectedGameIndex;
             this.previewPgn();
           } else {
@@ -216,7 +219,9 @@ export default {
   margin-left: 10px;
   margin-right: 10px;
 }
-#previewPlayers, #previewEvent, #previewEventData {
+#previewPlayers,
+#previewEvent,
+#previewEventData {
   display: block;
   width: 300px;
   margin-left: 20px;
