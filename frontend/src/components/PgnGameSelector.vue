@@ -81,7 +81,7 @@
 
 <script>
 import SimpleModalDialog from "./SimpleModalDialog";
-const Chess = require("chess.js");
+import pgnReader from "../libs/pgn_parser/pgn";
 
 export default {
   props: {
@@ -136,35 +136,20 @@ export default {
       this.selectedPgnIndex = this.pgnsArray.length - 1;
       this.previewPgn();
     },
-    findHeader(pgnTree, tag) {
-      const headers = pgnTree.headers;
-      let result = "";
-
-      for (let entry of headers) {
-        const key = entry.name;
-        const value = entry.value;
-
-        if (key === tag) result = value;
-      }
-
-      return result;
-    },
     previewPgn: function() {
       if (this.selectedPgnIndex > this.pgnsArray.length) return;
-      const selectedPgnTree = this.pgnsArray[this.selectedPgnIndex];
-      const chess = new Chess();
-      for (let moveData of selectedPgnTree.moves) {
-        chess.move(moveData.move);
-      }
-      const finalPosition = chess.fen();
-      this.selectedPgnWhite = this.findHeader(selectedPgnTree, "White");
-      this.selectedPgnBlack = this.findHeader(selectedPgnTree, "Black");
-      this.selectedPgnSite = this.findHeader(selectedPgnTree, "Site");
-      this.selectedPgnDate = this.findHeader(selectedPgnTree, "Date");
-      const playerHasBlack = finalPosition.split(" ")[1] !== "w";
+      const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
+      const loader = new pgnReader({pgn: selectedPgnContent});
+      const gameData = loader.load_pgn();
+      const startupPosition = gameData.startupPosition;
+      this.selectedPgnWhite = gameData.headers["White"];
+      this.selectedPgnBlack = gameData.headers["Black"];
+      this.selectedPgnSite = gameData.headers["Site"];
+      this.selectedPgnDate = gameData.headers["Date"];
+      const playerHasBlack = startupPosition.split(" ")[1] !== "w";
       this.previewBoardReversed = playerHasBlack;
       const previewComponent = this.$refs["previewBoard"];
-      previewComponent.newGame(finalPosition);
+      previewComponent.newGame(startupPosition);
     },
     handleConfirm() {
       this.$refs["root"].close();

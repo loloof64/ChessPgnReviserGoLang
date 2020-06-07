@@ -45,7 +45,7 @@
       <v-card-text>{{errorDialogText}}</v-card-text>
     </simple-modal-dialog>
 
-    <pgn-game-selector ref="pgnGameSelector" :confirmAction="loadPgn" :pgnGames="pgnGames" />
+    <pgn-game-selector ref="pgnGameSelector" :confirmAction="loadPgn" />
 
     <v-progress-circular indeterminate size="300" width="20" color="light-blue" v-if="loadingPgn"></v-progress-circular>
 
@@ -58,8 +58,9 @@ import SimpleModalDialog from "./SimpleModalDialog";
 import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
+import splitPgn from './PgnSplitter.worker';
 
-import {parsePgn} from './PgnParser.worker';
+import pgnReader from "../libs/pgn_parser/pgn";
 
 /*
     History should be something like (here simplified)
@@ -116,7 +117,7 @@ export default {
       orderedHistory: [],
       errorDialogTitle: "",
       errorDialogText: "",
-      pgnGames: [],
+      pgnGamesContents: [],
       loadingPgn: false
     };
   },
@@ -141,17 +142,20 @@ export default {
         "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
       )
         .then(async content => {
-          try {
             this.loadingPgn = true;
-            this.pgnGames = await parsePgn(content);
+            const pgnGamesContents = await splitPgn(content);
+
+            if (pgnGamesContents.length === 0) {
+              this.loadingPgn = false;
+              this.errorDialogTitle = this.$i18n.t("modals.noGameInPgn.title");
+              this.errorDialogText = this.$i18n.t("modals.noGameInPgn.text");
+              this.$refs["errorDialog"].open();
+              return;
+            }
+
             this.loadingPgn = false;
-            this.$refs["pgnGameSelector"].open(this.pgnGames);
-          } catch (error) {
-            console.error(error);
-            this.errorDialogTitle = this.$i18n.t("modals.error.title");
-            this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
-            this.$refs["errorDialog"].open();
-          }
+            this.pgnGamesContents = pgnGamesContents;
+            this.$refs["pgnGameSelector"].open(this.pgnGamesContents);
         })
         .catch(error => {
           console.error(error);
@@ -246,24 +250,28 @@ export default {
       }
     },
     loadPgn(index) {
-      const game = this.pgnGames[index];
-      if (!game) {
+      const gameStr = this.pgnGamesContents[index];
+      if (!gameStr) {
         console.error(
           "Out of bounds ! Requested game " +
             index +
             ", but size is " +
-            this.pgnGames.length
+            this.pgnGamesContents.length
         );
         return;
       }
 
+      const loader = new pgnReader({pgn: gameStr});
+      const result = loader.load_pgn();
+      const startupPosition = result.startupPosition;
+
       const boardComponent = document.querySelector("loloof64-chessboard");
-      boardComponent.newGame();
+      startupPosition ? boardComponent.newGame(startupPosition) : boardComponent.newGame();
 
       this.$refs["history"].clearSelection();
       this.history = [];
       this.updateOrderedHistory();
-    }
+    },
   },
   computed: {
     promotion_dialog_title() {
