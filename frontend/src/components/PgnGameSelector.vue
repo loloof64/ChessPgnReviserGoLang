@@ -73,7 +73,9 @@
 
         <div id="previewPlayers">{{ previewPgnWhitePlayer }} | {{ previewPgnBlackPlayer }}</div>
 
-        <div id="previewEvent">{{ selectedPgnSite }} {{ previewPgnDate }}</div>
+        <div id="previewEvent">{{ selectedPgnEvent }}</div>
+
+        <div id="previewEventData">{{ selectedPgnSite }} {{ previewPgnDate }}</div>
       </v-row>
     </v-layout>
   </simple-modal-dialog>
@@ -103,7 +105,8 @@ export default {
       selectedPgnWhite: "",
       selectedPgnBlack: "",
       selectedPgnSite: "",
-      selectedPgnDate: ""
+      selectedPgnDate: "",
+      selectedPgnEvent: "",
     };
   },
   methods: {
@@ -141,11 +144,15 @@ export default {
       const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
       const loader = new pgnReader({pgn: selectedPgnContent});
       const gameData = loader.load_pgn();
+      ////////////////////////////////
+      console.log(gameData);
+      ///////////////////////////////////
       const startupPosition = gameData.startupPosition;
       this.selectedPgnWhite = gameData.headers["White"];
       this.selectedPgnBlack = gameData.headers["Black"];
       this.selectedPgnSite = gameData.headers["Site"];
       this.selectedPgnDate = gameData.headers["Date"];
+      this.selectedPgnEvent = gameData.headers["Event"];
       const playerHasBlack = startupPosition.split(" ")[1] !== "w";
       this.previewBoardReversed = playerHasBlack;
       const previewComponent = this.$refs["previewBoard"];
@@ -209,11 +216,9 @@ export default {
   margin-left: 10px;
   margin-right: 10px;
 }
-#previewPlayers {
-  margin-left: 20px;
-  margin-top: 20px;
-}
-#previewEvent {
+#previewPlayers, #previewEvent, #previewEventData {
+  display: block;
+  width: 300px;
   margin-left: 20px;
   margin-top: 20px;
 }
