@@ -51,8 +51,6 @@
       @error="handlePgnLoadingError"
     />
 
-    <v-progress-circular indeterminate size="300" width="20" color="light-blue" v-if="loadingPgn"></v-progress-circular>
-
     <simple-snack-bar ref="snackBar" />
   </v-row>
 </template>
@@ -62,7 +60,6 @@ import SimpleModalDialog from "./SimpleModalDialog";
 import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
-import splitPgn from "./PgnSplitter.worker";
 
 import pgnReader from "../libs/pgn_parser/pgn";
 
@@ -121,8 +118,7 @@ export default {
       orderedHistory: [],
       errorDialogTitle: "",
       errorDialogText: "",
-      pgnGamesContents: [],
-      loadingPgn: false
+      pgnGamesContents: []
     };
   },
   methods: {
@@ -143,21 +139,17 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/ANdersson.pgn"
+        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
       )
         .then(async content => {
-          this.loadingPgn = true;
-          const pgnGamesContents = await splitPgn(content);
+          const pgnGamesContents = await this.splitPgn(content);
 
           if (pgnGamesContents.length === 0) {
-            this.loadingPgn = false;
             this.errorDialogTitle = this.$i18n.t("modals.noGameInPgn.title");
             this.errorDialogText = this.$i18n.t("modals.noGameInPgn.text");
             this.$refs["errorDialog"].open();
             return;
           }
-
-          this.loadingPgn = false;
           this.pgnGamesContents = pgnGamesContents;
           this.$refs["pgnGameSelector"].open(this.pgnGamesContents);
         })
@@ -283,6 +275,60 @@ export default {
       this.errorDialogTitle = this.$i18n.t("modals.error.title");
       this.errorDialogText = this.$i18n.t("modals.error.pgn_parsing");
       this.$refs["errorDialog"].open();
+    },
+    splitPgn(pgnContent) {
+      let results = [];
+      const isOutOfGame = 0;
+      const isInHeader = 1;
+      const isInGame = 2;
+      let status = isOutOfGame;
+      let currentGame = "";
+      const isAHeaderLine = l => l.startsWith("[");
+      const isBlankLine = l => l.trim().length === 0;
+      const lines = pgnContent.split(/\r?\n/);
+      lines.forEach(l => {
+        switch (status) {
+          case isOutOfGame:
+            if (isAHeaderLine(l)) {
+              status = isInHeader;
+              currentGame += l + "\n";
+            } else if (!isBlankLine(l)) {
+              status = isInGame;
+              currentGame += l + "\n";
+            }
+            break;
+          case isInHeader:
+            if (status === isInGame) {
+              results.push(currentGame);
+              currentGame = "";
+            }
+            if (isAHeaderLine(l)) {
+              currentGame += l + "\n";
+            } else if (isBlankLine(l)) {
+              status = isInGame;
+              currentGame += "\n";
+            } else {
+              currentGame += l + "\n";
+            }
+            break;
+
+          case isInGame:
+            if (isAHeaderLine(l)) {
+              results.push(currentGame);
+              currentGame = "";
+              status = isInHeader;
+              currentGame += l + "\n";
+            } else if (isBlankLine(l)) {
+              results.push(currentGame);
+              currentGame = "";
+              status = isOutOfGame;
+            } else {
+              currentGame += l + "\n";
+            }
+        }
+      });
+      if (currentGame.length > 0) results.push(currentGame);
+      return results;
     }
   },
   computed: {
