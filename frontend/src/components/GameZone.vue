@@ -353,9 +353,10 @@ export default {
     handleMoveDone(event) {
       const boardComponent = document.querySelector("loloof64-chessboard");
       const isWhiteTurn = boardComponent.isWhiteTurn();
-      const isComputerTurn =
-        (isWhiteTurn === true && this.white_computer === true) ||
-        (isWhiteTurn !== true && this.black_computer === true);
+      const isComputerTurnBeforeMove =
+        (isWhiteTurn !== true && this.white_computer === true) ||
+        (isWhiteTurn === true && this.black_computer === true);
+      const isComputerTurnBeforeAndAfterMove = isComputerTurnBeforeMove && !isWhiteTurn;
 
       const moveObject = event.detail.moveObject;
       const playedMoveSan = moveObject.moveSan;
@@ -376,15 +377,15 @@ export default {
 
       if (isMainMove) {
         this.variationMoveIndex++;
-        setTimeout(this.handleNextMove, isComputerTurn ? 500 : 0);
+        setTimeout(this.handleNextMove, isComputerTurnBeforeAndAfterMove ? 500 : 0);
       } else if (playedVariationIndex >= 0) {
         this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
           playedVariationIndex
         ].moves;
         this.variationMoveIndex = 1;
-        setTimeout(this.handleNextMove, isComputerTurn ? 500 : 0);
+        setTimeout(this.handleNextMove, isComputerTurnBeforeAndAfterMove ? 500 : 0);
       } else {
-        if (!isComputerTurn) {
+        if (!isComputerTurnBeforeMove) {
           boardComponent.stop();
           this.$refs["wrongMoveDialog"].open();
         }
