@@ -109,6 +109,7 @@ export default {
       selectedPgnEvent: "",
 
       gameData: undefined,
+      startupPosition: undefined,
     };
   },
   methods: {
@@ -147,16 +148,16 @@ export default {
         const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
         this.gameData = pgnParser.parse(selectedPgnContent)[0];
 
-        const startupPosition = this.findHeader("FEN");
+        this.startupPosition = this.findHeader("FEN");
         this.selectedPgnWhite = this.findHeader("White");
         this.selectedPgnBlack = this.findHeader("Black");
         this.selectedPgnSite = this.findHeader("Site");
         this.selectedPgnDate = this.findHeader("Date");
         this.selectedPgnEvent = this.findHeader("Event");
-        const playerHasBlack = startupPosition ? (startupPosition.split(" ")[1] !== "w"): false;
+        const playerHasBlack = this.startupPosition ? (this.startupPosition.split(" ")[1] !== "w"): false;
         this.previewBoardReversed = playerHasBlack;
         const previewComponent = this.$refs["previewBoard"];
-        previewComponent.newGame(startupPosition);
+        previewComponent.newGame(this.startupPosition);
       } catch (error) {
         this.$emit('error', error);
       }
@@ -169,7 +170,7 @@ export default {
     },
     handleConfirm() {
       this.$refs["root"].close();
-      this.confirmAction(this.gameData);
+      this.confirmAction(this.gameData, this.startupPosition);
     },
     handleNumericalSelection(event) {
       const ENTER_KEY = "Enter";

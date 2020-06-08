@@ -135,6 +135,7 @@ export default {
       errorDialogText: "",
       pgnGamesContents: [],
       gameData: undefined,
+      startupPosition: undefined,
       variationNode: undefined,
       variationMoveIndex: 0,
       white_computer: false,
@@ -159,7 +160,7 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/temp/pgn/ItalianGame.pgn"
+        "/home/laurent-bernabe/Documents/Echecs/Positions/CoursDanielRensch/Endgames And Tactics Conversion Kit/lesson01.pgn"
       ).then(async content => {
         if (content != "#ErrorReadingFile") {
           const pgnGamesContents = await this.splitPgn(content);
@@ -324,9 +325,10 @@ export default {
       if (currentGame.length > 0) results.push(currentGame);
       return results;
     },
-    startGameNextProcess(pgnData) {
+    startGameNextProcess(pgnData, startupPosition) {
       if (pgnData) {
         this.gameData = pgnData;
+        this.startupPosition = startupPosition;
         this.$refs["playerTypesSelection"].open();
       }
     },
@@ -339,7 +341,7 @@ export default {
       setTimeout(() => {
         this.variationNode = this.gameData.moves;
         this.variationMoveIndex = 0;
-        const startupPosition = this.gameData.startupPosition;
+        const startupPosition = this.startupPosition;
         const boardComponent = document.querySelector("loloof64-chessboard");
         boardComponent.newGame(startupPosition);
 
