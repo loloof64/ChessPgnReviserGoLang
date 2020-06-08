@@ -159,9 +159,9 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/temp/pgn/ItalianGame.pgn"
-      )
-        .then(async content => {
+        "/home/laurent-bernabe/Documents/temp/pgn/PgnDroitsRoot.pgn"
+      ).then(async content => {
+        if (content != "#ErrorReadingFile") {
           const pgnGamesContents = await this.splitPgn(content);
 
           if (pgnGamesContents.length === 0) {
@@ -172,13 +172,12 @@ export default {
           }
           this.pgnGamesContents = pgnGamesContents;
           this.$refs["pgnGameSelector"].open(this.pgnGamesContents);
-        })
-        .catch(error => {
-          console.error(error);
+        } else {
           this.errorDialogTitle = this.$i18n.t("modals.error.title");
           this.errorDialogText = this.$i18n.t("modals.error.file_reading");
           this.$refs["errorDialog"].open();
-        });
+        }
+      });
     },
     doStopGame() {
       const boardComponent = document.querySelector("loloof64-chessboard");
