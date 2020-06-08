@@ -13,7 +13,8 @@
     "modals": {
         "global": {
             "okButton": "D'accord",
-            "cancelButton": "Annuler"
+            "cancelButton": "Annuler",
+            "validateButton": "Valider"
         },
         "newGame": {
             "title": "Démarrer une nouvelle partie ?",
@@ -28,6 +29,9 @@
         },
         "pgnSelection": {
             "title": "Veuillez choisir la partie à partir du PGN :"
+        },
+        "playersTypesSelection": {
+            "title": "Veuillez choisir les types de joueurs :"
         },
         "error": {
             "title": "Error",

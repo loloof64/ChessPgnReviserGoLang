@@ -106,7 +106,9 @@ export default {
       selectedPgnBlack: "",
       selectedPgnSite: "",
       selectedPgnDate: "",
-      selectedPgnEvent: ""
+      selectedPgnEvent: "",
+
+      gameData: undefined,
     };
   },
   methods: {
@@ -144,16 +146,16 @@ export default {
         if (this.selectedPgnIndex > this.pgnsArray.length) return;
         const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
         const loader = new pgnReader({ pgn: selectedPgnContent });
-        const gameData = loader.load_pgn();
+        this.gameData = loader.load_pgn();
         ////////////////////////////////
-        console.log(gameData);
+        console.log(this.gameData);
         ///////////////////////////////////
-        const startupPosition = gameData.startupPosition;
-        this.selectedPgnWhite = gameData.headers["White"];
-        this.selectedPgnBlack = gameData.headers["Black"];
-        this.selectedPgnSite = gameData.headers["Site"];
-        this.selectedPgnDate = gameData.headers["Date"];
-        this.selectedPgnEvent = gameData.headers["Event"];
+        const startupPosition = this.gameData.startupPosition;
+        this.selectedPgnWhite = this.gameData.headers["White"];
+        this.selectedPgnBlack = this.gameData.headers["Black"];
+        this.selectedPgnSite = this.gameData.headers["Site"];
+        this.selectedPgnDate = this.gameData.headers["Date"];
+        this.selectedPgnEvent = this.gameData.headers["Event"];
         const playerHasBlack = startupPosition.split(" ")[1] !== "w";
         this.previewBoardReversed = playerHasBlack;
         const previewComponent = this.$refs["previewBoard"];
@@ -164,7 +166,7 @@ export default {
     },
     handleConfirm() {
       this.$refs["root"].close();
-      this.confirmAction(this.selectedPgnIndex);
+      this.confirmAction(this.gameData);
     },
     handleNumericalSelection(event) {
       const ENTER_KEY = "Enter";

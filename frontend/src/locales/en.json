@@ -13,7 +13,8 @@
     "modals": {
         "global": {
             "okButton": "OK",
-            "cancelButton": "Cancel"
+            "cancelButton": "Cancel",
+            "validateButton": "Validate"
         },
         "newGame": {
             "title": "Start new game ?",
@@ -28,6 +29,9 @@
         },
         "pgnSelection": {
             "title": "Choose the game from the PGN :"
+        },
+        "playersTypesSelection": {
+            "title": "Select players types :"
         },
         "error": {
             "title": "Error",

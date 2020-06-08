@@ -6,8 +6,8 @@
         white_cell_color="navajowhite"
         black_cell_color="peru"
         background="brown"
-        white_player_human="true"
-        black_player_human="true"
+        :white_player_human="!white_computer"
+        :black_player_human="!black_computer"
         :reversed="board_reversed"
         :promotion_dialog_title="promotion_dialog_title"
         @checkmate="handleCheckmate($event)"
@@ -15,7 +15,7 @@
         @perpetual-draw="handlePerpetualDraw()"
         @missing-material-draw="handleMissingMaterialDraw()"
         @fifty-moves-draw="handleFiftyMovesDraw()"
-        @move-done="addMoveToHistory($event)"
+        @move-done="handleMoveDone($event)"
       />
     </v-col>
 
@@ -47,9 +47,11 @@
 
     <pgn-game-selector
       ref="pgnGameSelector"
-      :confirmAction="loadPgn"
+      :confirmAction="startGameNextProcess"
       @error="handlePgnLoadingError"
     />
+
+    <player-types-selection ref="playerTypesSelection" @validated="startGameLastProcess" />
 
     <simple-snack-bar ref="snackBar" />
   </v-row>
@@ -60,8 +62,7 @@ import SimpleModalDialog from "./SimpleModalDialog";
 import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
-
-import pgnReader from "../libs/pgn_parser/pgn";
+import PlayerTypesSelection from "./PlayerTypesSelection";
 
 /*
     History should be something like (here simplified)
@@ -118,7 +119,12 @@ export default {
       orderedHistory: [],
       errorDialogTitle: "",
       errorDialogText: "",
-      pgnGamesContents: []
+      pgnGamesContents: [],
+      gameData: undefined,
+      variationNode: undefined,
+      variationMoveIndex: 0,
+      white_computer: false,
+      black_computer: false
     };
   },
   methods: {
@@ -139,7 +145,7 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/Echecs/Parties/GMI/Andersson.pgn"
+        "/home/laurent-bernabe/Documents/temp/pgn/ItalianGame.pgn"
       )
         .then(async content => {
           const pgnGamesContents = await this.splitPgn(content);
@@ -218,8 +224,8 @@ export default {
       }
       this.orderedHistory = update;
     },
-    addMoveToHistory: function(event) {
-      this.history = [...this.history, event.detail.moveObject];
+    addMoveToHistory: function(moveObject) {
+      this.history = [...this.history, moveObject];
       this.updateOrderedHistory();
       const boardComponent = document.querySelector("loloof64-chessboard");
       if (!boardComponent.gameIsInProgress()) {
@@ -244,31 +250,6 @@ export default {
         const historyComponent = this.$refs["history"];
         historyComponent.confirmPositionSet(evt);
       }
-    },
-    loadPgn(index) {
-      const gameStr = this.pgnGamesContents[index];
-      if (!gameStr) {
-        console.error(
-          "Out of bounds ! Requested game " +
-            index +
-            ", but size is " +
-            this.pgnGamesContents.length
-        );
-        return;
-      }
-
-      const loader = new pgnReader({ pgn: gameStr });
-      const result = loader.load_pgn();
-      const startupPosition = result.startupPosition;
-
-      const boardComponent = document.querySelector("loloof64-chessboard");
-      startupPosition
-        ? boardComponent.newGame(startupPosition)
-        : boardComponent.newGame();
-
-      this.$refs["history"].clearSelection();
-      this.history = [];
-      this.updateOrderedHistory();
     },
     handlePgnLoadingError(error) {
       console.error(error);
@@ -329,6 +310,87 @@ export default {
       });
       if (currentGame.length > 0) results.push(currentGame);
       return results;
+    },
+    startGameNextProcess(pgnData) {
+      this.gameData = pgnData;
+      this.$refs["playerTypesSelection"].open();
+    },
+    startGameLastProcess({ white_computer, black_computer }) {
+      this.white_computer = white_computer;
+      this.black_computer = black_computer;
+      this.variationNode = this.gameData.moves;
+      this.variationMoveIndex = 0;
+      const startupPosition = this.gameData.startupPosition;
+      const boardComponent = document.querySelector("loloof64-chessboard");
+      boardComponent.newGame(startupPosition);
+
+      this.$refs["history"].clearSelection();
+      this.history = [];
+      this.updateOrderedHistory();
+    },
+    handleMoveDone(event) {
+      const moveObject = event.detail.moveObject;
+      const playedMoveSan = moveObject.moveSan;
+      this.addMoveToHistory(moveObject);
+
+      let allMoves = this.getExpectedMoves();
+
+      const expectedMainMove = allMoves[0];
+      allMoves.shift();
+      const expectedVariationsMoves = allMoves;
+
+      const isMainMove = playedMoveSan === expectedMainMove.san;
+      const playedVariationIndex = expectedVariationsMoves ? expectedVariationsMoves.findIndex(
+        currentVariation => currentVariation.san === playedMoveSan
+      ) : -1;
+
+      if (isMainMove) {
+        /////////////////////////////
+        console.log("main move");
+        //////////////////////////////
+        this.variationMoveIndex++;
+      }
+      else if (playedVariationIndex >= 0) {
+        /////////////////////////////
+        console.log("variation move");
+        //////////////////////////////
+        const currentNode = this.variationNode[this.variationMoveIndex];
+        this.variationNode = currentNode.variations[playedVariationIndex];
+        this.variationMoveIndex = 0;
+
+        //////////////////////////////
+        console.log(currentNode);
+        //////////////////////////////
+      }
+      else {
+        /////////////////////////////
+        console.log("wrong move");
+        //////////////////////////////
+        const boardComponent = document.querySelector('loloof64-chessboard');
+        boardComponent.stop();
+      }
+    },
+    getExpectedMoves() {
+      let result = [];
+
+      const currentNode = this.variationNode[this.variationMoveIndex];
+      const mainMoveData = {
+        san: currentNode.notation.notation,
+        from: currentNode.from,
+        to: currentNode.to
+      };
+      result.push(mainMoveData);
+
+      currentNode.variations.forEach(variationNode => {
+        const variationData = {
+          san: variationNode.notation.notation,
+          from: variationNode.from,
+          to: variationNode.to
+        };
+        result.push(variationData);
+      });
+
+      return result;
     }
   },
   computed: {
@@ -340,7 +402,8 @@ export default {
     "simple-modal-dialog": SimpleModalDialog,
     "simple-snack-bar": SimpleSnackBar,
     history: MovesHistory,
-    "pgn-game-selector": PgnGameSelector
+    "pgn-game-selector": PgnGameSelector,
+    "player-types-selection": PlayerTypesSelection
   }
 };
 </script>
