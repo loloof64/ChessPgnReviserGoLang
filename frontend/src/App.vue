@@ -23,12 +23,17 @@
     <v-content class="white">
       <v-container fluid class="px-0">
         <v-layout justify-center align-center class="px-0">
-          <game-zone ref="game_zone"></game-zone>
+          <game-zone ref="game_zone" @new-game="handleNewGame"></game-zone>
         </v-layout>
       </v-container>
     </v-content>
     <v-footer app fixed class="grey">
-      <span style="margin-left:1em">&copy; Laurent Bernabe - 2020</span>
+      <span id="copyright">&copy; Laurent Bernabe - 2020</span>
+      <span>{{$t('history.header.whiteSide')}} : </span>
+      <img :src='whiteSideImage()' class="sideImage" :alt="$t('history.header.whiteSide')" />
+      <span>&nbsp;/&nbsp;</span>
+      <span>{{$t('history.header.blackSide')}} : </span>
+      <img :src='blackSideImage()' class="sideImage" :alt="$t('history.header.blackSide')" />
     </v-footer>
   </v-app>
 </template>
@@ -36,9 +41,15 @@
 <script>
 import GameZone from "./components/GameZone.vue";
 
+const unavailableImage = require('./assets/images/unavailable.png');
+const humanImage = require('./assets/images/human.png');
+const computerImage = require('./assets/images/computer.png');
+
 export default {
   data: () => ({
-    drawer: false
+    drawer: false,
+    white_computer: undefined,
+    black_computer: undefined,
   }),
   components: {
     GameZone
@@ -55,6 +66,20 @@ export default {
     },
     stopGame() {
       this.$refs["game_zone"].requestStopGame();
+    },
+    whiteSideImage() {
+      if (this.white_computer === undefined) return unavailableImage;
+      if (this.white_computer === true) return computerImage;
+      return humanImage;
+    },
+     blackSideImage() {
+      if (this.black_computer === undefined) return unavailableImage;
+      if (this.black_computer === true) return computerImage;
+      return humanImage;
+    },
+    handleNewGame({white_computer, black_computer}) {
+      this.white_computer = white_computer;
+      this.black_computer = black_computer
     }
   },
   mounted() {
@@ -64,9 +89,18 @@ export default {
 </script>
 
 <style>
+.v-footer span {
+  margin: 0 1em;
+}
 .toolbarButton {
   width: 50px;
   height: 50px;
+  margin: 5px;
+}
+
+.sideImage {
+  width: 30px;
+  height: 30px;
   margin: 5px;
 }
 </style>

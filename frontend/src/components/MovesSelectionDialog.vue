@@ -26,7 +26,7 @@ export default {
       title: "",
       mainMoveLabel: "",
       variationMovesLabel: "",
-      mainMove: undefined,
+      mainMove: {},
       variationMoves: []
     };
   },

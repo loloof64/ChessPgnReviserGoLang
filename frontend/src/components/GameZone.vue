@@ -334,6 +334,8 @@ export default {
       this.white_computer = white_computer;
       this.black_computer = black_computer;
 
+      this.$emit('new-game', {white_computer, black_computer});
+
       setTimeout(() => {
         this.variationNode = this.gameData.moves;
         this.variationMoveIndex = 0;
