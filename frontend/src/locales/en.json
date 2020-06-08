@@ -33,6 +33,14 @@
         "playersTypesSelection": {
             "title": "Select players types :"
         },
+        "noMoreMove": {
+            "title": "No more move",
+            "text": "No more move available."
+        },
+        "wrongMove": {
+            "title": "Wrong move",
+            "text": "This was not an expected move !"
+        },
         "error": {
             "title": "Error",
             "file_reading": "Failed to read selected file !",

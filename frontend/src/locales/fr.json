@@ -33,6 +33,14 @@
         "playersTypesSelection": {
             "title": "Veuillez choisir les types de joueurs :"
         },
+        "noMoreMove": {
+            "title": "Plus aucun coup",
+            "text": "Plus aucun coup à trouver."
+        },
+        "wrongMove": {
+            "title": "Mauvais coup",
+            "text": "Ce n'était pas un coup attendu !"
+        },
         "error": {
             "title": "Error",
             "file_reading": "Failed to read selected file !",

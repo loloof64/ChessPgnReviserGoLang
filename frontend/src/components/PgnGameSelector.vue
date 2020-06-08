@@ -83,7 +83,7 @@
 
 <script>
 import SimpleModalDialog from "./SimpleModalDialog";
-import pgnReader from "../libs/pgn_parser/pgn";
+const pgnParser = require('pgn-parser');
 
 export default {
   props: {
@@ -145,24 +145,29 @@ export default {
       try {
         if (this.selectedPgnIndex > this.pgnsArray.length) return;
         const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
-        const loader = new pgnReader({ pgn: selectedPgnContent });
-        this.gameData = loader.load_pgn();
+        this.gameData = pgnParser.parse(selectedPgnContent)[0];
         ////////////////////////////////
         console.log(this.gameData);
         ///////////////////////////////////
-        const startupPosition = this.gameData.startupPosition;
-        this.selectedPgnWhite = this.gameData.headers["White"];
-        this.selectedPgnBlack = this.gameData.headers["Black"];
-        this.selectedPgnSite = this.gameData.headers["Site"];
-        this.selectedPgnDate = this.gameData.headers["Date"];
-        this.selectedPgnEvent = this.gameData.headers["Event"];
-        const playerHasBlack = startupPosition.split(" ")[1] !== "w";
+        const startupPosition = this.findHeader("FEN");
+        this.selectedPgnWhite = this.findHeader("White");
+        this.selectedPgnBlack = this.findHeader("Black");
+        this.selectedPgnSite = this.findHeader("Site");
+        this.selectedPgnDate = this.findHeader("Date");
+        this.selectedPgnEvent = this.findHeader("Event");
+        const playerHasBlack = startupPosition ? (startupPosition.split(" ")[1] !== "w"): false;
         this.previewBoardReversed = playerHasBlack;
         const previewComponent = this.$refs["previewBoard"];
         previewComponent.newGame(startupPosition);
       } catch (error) {
         this.$emit('error', error);
       }
+    },
+    findHeader(headerTag){
+      for (let entry of this.gameData.headers) {
+        if (entry.name === headerTag) return entry.value;
+      }
+      return undefined;
     },
     handleConfirm() {
       this.$refs["root"].close();

@@ -41,6 +41,14 @@
       <v-card-text>{{$t('modals.stopGame.text')}}</v-card-text>
     </simple-modal-dialog>
 
+    <simple-modal-dialog ref="noMoreMoveDialog" :title="$t('modals.noMoreMove.title')">
+      <v-card-text>{{$t('modals.noMoreMove.text')}}</v-card-text>
+    </simple-modal-dialog>
+
+    <simple-modal-dialog ref="wrongMoveDialog" :title="$t('modals.wrongMove.title')">
+      <v-card-text>{{$t('modals.wrongMove.text')}}</v-card-text>
+    </simple-modal-dialog>
+
     <simple-modal-dialog ref="errorDialog" :title="errorDialogTitle">
       <v-card-text>{{errorDialogText}}</v-card-text>
     </simple-modal-dialog>
@@ -335,63 +343,59 @@ export default {
 
       let allMoves = this.getExpectedMoves();
 
+
       const expectedMainMove = allMoves[0];
       allMoves.shift();
       const expectedVariationsMoves = allMoves;
 
-      const isMainMove = playedMoveSan === expectedMainMove.san;
-      const playedVariationIndex = expectedVariationsMoves ? expectedVariationsMoves.findIndex(
-        currentVariation => currentVariation.san === playedMoveSan
-      ) : -1;
+      const isMainMove = playedMoveSan === expectedMainMove;
+      const playedVariationIndex = expectedVariationsMoves
+        ? expectedVariationsMoves.findIndex(
+            currentVariation => currentVariation === playedMoveSan
+          )
+        : -1;
 
       if (isMainMove) {
-        /////////////////////////////
-        console.log("main move");
-        //////////////////////////////
         this.variationMoveIndex++;
-      }
-      else if (playedVariationIndex >= 0) {
-        /////////////////////////////
-        console.log("variation move");
-        //////////////////////////////
-        const currentNode = this.variationNode[this.variationMoveIndex];
-        this.variationNode = currentNode.variations[playedVariationIndex];
-        this.variationMoveIndex = 0;
+        this.handleNextMove();
+      } else if (playedVariationIndex >= 0) {
+        this.variationNode = this.variationNode[this.variationMoveIndex].ravs[playedVariationIndex].moves;
+        this.variationMoveIndex = 1;
 
-        //////////////////////////////
-        console.log(currentNode);
-        //////////////////////////////
-      }
-      else {
-        /////////////////////////////
-        console.log("wrong move");
-        //////////////////////////////
-        const boardComponent = document.querySelector('loloof64-chessboard');
+        this.handleNextMove();
+      } else {
+        const boardComponent = document.querySelector("loloof64-chessboard");
         boardComponent.stop();
+
+        this.$refs['wrongMoveDialog'].open();
       }
     },
     getExpectedMoves() {
       let result = [];
 
       const currentNode = this.variationNode[this.variationMoveIndex];
-      const mainMoveData = {
-        san: currentNode.notation.notation,
-        from: currentNode.from,
-        to: currentNode.to
-      };
-      result.push(mainMoveData);
 
-      currentNode.variations.forEach(variationNode => {
-        const variationData = {
-          san: variationNode.notation.notation,
-          from: variationNode.from,
-          to: variationNode.to
-        };
-        result.push(variationData);
-      });
+      const mainMove = currentNode.move;
+      result.push(mainMove);
+
+      if (currentNode.ravs) {
+        currentNode.ravs.forEach(variationNode => {
+          const variation = variationNode.moves[0].move;
+          result.push(variation);
+        });
+      }
 
       return result;
-    }
+    },
+    handleNextMove() {
+      const noMoreMove = this.variationMoveIndex >= this.variationNode.length;
+      if (noMoreMove) {
+        const boardComponent = document.querySelector("loloof64-chessboard");
+        boardComponent.stop();
+        
+        this.$refs['noMoreMoveDialog'].open();
+      }
+    },
   },
   computed: {
     promotion_dialog_title() {
