@@ -146,9 +146,7 @@ export default {
         if (this.selectedPgnIndex > this.pgnsArray.length) return;
         const selectedPgnContent = this.pgnsArray[this.selectedPgnIndex];
         this.gameData = pgnParser.parse(selectedPgnContent)[0];
-        ////////////////////////////////
-        console.log(this.gameData);
-        ///////////////////////////////////
+
         const startupPosition = this.findHeader("FEN");
         this.selectedPgnWhite = this.findHeader("White");
         this.selectedPgnBlack = this.findHeader("Black");

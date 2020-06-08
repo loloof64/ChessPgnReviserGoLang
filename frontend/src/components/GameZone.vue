@@ -138,8 +138,7 @@ export default {
       variationNode: undefined,
       variationMoveIndex: 0,
       white_computer: false,
-      black_computer: false,
-      isComputerMove: false
+      black_computer: false
     };
   },
   methods: {
@@ -345,71 +344,65 @@ export default {
         this.history = [];
         this.updateOrderedHistory();
 
-        const whiteTurn = boardComponent.isWhiteTurn();
-        this.isComputerMove =
-          (whiteTurn === true && white_computer === true) ||
-          (whiteTurn === false && black_computer === true);
-
-        if (this.isComputerMove) this.makeComputerPlayNextMove();
+        this.makeComputerPlayNextMoveIfAppropriate();
       }, 400);
     },
     handleMoveDone(event) {
-      const handleMoveDoneLogic = () => {
-        const moveObject = event.detail.moveObject;
-        const playedMoveSan = moveObject.moveSan;
-        this.addMoveToHistory(moveObject);
+      const boardComponent = document.querySelector("loloof64-chessboard");
+      const isWhiteTurn = boardComponent.isWhiteTurn();
+      const isComputerTurn =
+        (isWhiteTurn === true && this.white_computer === true) ||
+        (isWhiteTurn !== true && this.black_computer === true);
 
-        let allMoves = this.getExpectedMoves();
+      const moveObject = event.detail.moveObject;
+      const playedMoveSan = moveObject.moveSan;
+      this.addMoveToHistory(moveObject);
 
-        const expectedMainMove = allMoves[0];
-        allMoves.shift();
-        const expectedVariationsMoves = allMoves;
+      let allMoves = this.getExpectedMoves();
 
-        const isMainMove = playedMoveSan === expectedMainMove;
-        const playedVariationIndex = expectedVariationsMoves
-          ? expectedVariationsMoves.findIndex(
-              currentVariation => currentVariation === playedMoveSan
-            )
-          : -1;
+      const expectedMainMove = allMoves[0];
+      allMoves.shift();
+      const expectedVariationsMoves = allMoves;
 
-        if (isMainMove) {
-          this.variationMoveIndex++;
-          this.isComputerMove = !this.isComputerMove;
-          this.handleNextMove();
-        } else if (playedVariationIndex >= 0) {
-          this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
-            playedVariationIndex
-          ].moves;
-          this.variationMoveIndex = 1;
-          this.isComputerMove = !this.isComputerMove;
+      const isMainMove = playedMoveSan === expectedMainMove;
+      const playedVariationIndex = expectedVariationsMoves
+        ? expectedVariationsMoves.findIndex(
+            currentVariation => currentVariation === playedMoveSan
+          )
+        : -1;
 
-          this.handleNextMove();
-        } else {
-          const boardComponent = document.querySelector("loloof64-chessboard");
+      if (isMainMove) {
+        this.variationMoveIndex++;
+        this.handleNextMove();
+      } else if (playedVariationIndex >= 0) {
+        this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
+          playedVariationIndex
+        ].moves;
+        this.variationMoveIndex = 1;
+        this.handleNextMove();
+      } else {
+        if (!isComputerTurn) {
           boardComponent.stop();
-
           this.$refs["wrongMoveDialog"].open();
         }
-      };
-
-      // We need to let the board update its internal state
-      setTimeout(handleMoveDoneLogic, 600);
+      }
     },
     getExpectedMoves() {
       let result = [];
 
-      const currentNode = this.variationNode[this.variationMoveIndex];
+      if (this.variationMoveIndex <= this.variationNode.length - 1) {
+        const currentNode = this.variationNode[this.variationMoveIndex];
 
-      const mainMove = currentNode.move;
-      result.push(mainMove);
+        const mainMove = currentNode.move;
+        result.push(mainMove);
 
-      if (currentNode.ravs) {
-        currentNode.ravs.forEach(variationNode => {
-          const variation = variationNode.moves[0].move;
-          result.push(variation);
-        });
+        if (currentNode.ravs) {
+          currentNode.ravs.forEach(variationNode => {
+            const variation = variationNode.moves[0].move;
+            result.push(variation);
+          });
+        }
       }
-
       return result;
     },
     handleNextMove() {
@@ -420,10 +413,18 @@ export default {
 
         this.$refs["noMoreMoveDialog"].open();
       } else {
-        if (this.isComputerMove) this.makeComputerPlayNextMove();
+        this.makeComputerPlayNextMoveIfAppropriate();
       }
     },
-    makeComputerPlayNextMove() {
+    makeComputerPlayNextMoveIfAppropriate() {
+      const boardComponent = document.querySelector("loloof64-chessboard");
+      const whiteTurn = boardComponent.isWhiteTurn();
+      const isComputerMove =
+        (whiteTurn === true && this.white_computer === true) ||
+        (whiteTurn === false && this.black_computer === true);
+
+      if (!isComputerMove) return;
+
       let allMoves = this.getExpectedMoves();
 
       const expectedMainMove = allMoves[0];
@@ -443,13 +444,37 @@ export default {
       } else {
         const boardComponent = document.querySelector("loloof64-chessboard");
         boardComponent.playMoveSan(expectedMainMove);
-
-        this.isComputerMove = !this.isComputerMove;
       }
     },
     handleComputerMoveSelected(playedMoveSan) {
       const boardComponent = document.querySelector("loloof64-chessboard");
       boardComponent.playMoveSan(playedMoveSan);
+
+      setTimeout(() => {
+        let allMoves = this.getExpectedMoves();
+
+        const expectedMainMove = allMoves[0];
+        allMoves.shift();
+        const expectedVariationsMoves = allMoves;
+
+        if (playedMoveSan === expectedMainMove) {
+          this.variationMoveIndex++;
+          this.handleNextMove();
+        } else {
+          const playedVariationIndex = expectedVariationsMoves.findIndex(
+            moveToCompare => moveToCompare === playedMoveSan
+          );
+          const isAMatchingVaration = playedVariationIndex >= 0;
+          if (isAMatchingVaration) {
+            this.variationNode = this.variationNode[
+              this.variationMoveIndex
+            ].ravs[playedVariationIndex].moves;
+            this.variationMoveIndex = 1;
+
+            this.handleNextMove();
+          }
+        }
+      }, 400);
     }
   },
   computed: {
