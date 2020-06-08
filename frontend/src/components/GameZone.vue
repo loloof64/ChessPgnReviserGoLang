@@ -45,10 +45,6 @@
       <v-card-text>{{$t('modals.noMoreMove.text')}}</v-card-text>
     </simple-modal-dialog>
 
-    <simple-modal-dialog ref="wrongMoveDialog" :title="$t('modals.wrongMove.title')">
-      <v-card-text>{{$t('modals.wrongMove.text')}}</v-card-text>
-    </simple-modal-dialog>
-
     <simple-modal-dialog ref="errorDialog" :title="errorDialogTitle">
       <v-card-text>{{errorDialogText}}</v-card-text>
     </simple-modal-dialog>
@@ -65,6 +61,8 @@
       ref="cpuMovesSelectionDialog"
       @move-selected="handleComputerMoveSelected"
     />
+
+    <moves-selection-dialog ref="expectedMovesDialog" closeButton />
 
     <simple-snack-bar ref="snackBar" />
   </v-row>
@@ -333,7 +331,7 @@ export default {
       this.white_computer = white_computer;
       this.black_computer = black_computer;
 
-      this.$emit('new-game', {white_computer, black_computer});
+      this.$emit("new-game", { white_computer, black_computer });
 
       setTimeout(() => {
         this.variationNode = this.gameData.moves;
@@ -355,13 +353,14 @@ export default {
       const isComputerTurnBeforeMove =
         (isWhiteTurn !== true && this.white_computer === true) ||
         (isWhiteTurn === true && this.black_computer === true);
-      const isComputerTurnBeforeAndAfterMove = isComputerTurnBeforeMove && !isWhiteTurn;
+      const isComputerTurnBeforeAndAfterMove =
+        isComputerTurnBeforeMove && !isWhiteTurn;
 
       const moveObject = event.detail.moveObject;
       const playedMoveSan = moveObject.moveSan;
       this.addMoveToHistory(moveObject);
 
-      let allMoves = this.getExpectedMoves();
+      let allMoves = this.getExpectedMoves(true);
 
       const expectedMainMove = allMoves[0];
       allMoves.shift();
@@ -376,32 +375,47 @@ export default {
 
       if (isMainMove) {
         this.variationMoveIndex++;
-        setTimeout(this.handleNextMove, isComputerTurnBeforeAndAfterMove ? 500 : 0);
+        setTimeout(
+          this.handleNextMove,
+          isComputerTurnBeforeAndAfterMove ? 500 : 0
+        );
       } else if (playedVariationIndex >= 0) {
         this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
           playedVariationIndex
         ].moves;
         this.variationMoveIndex = 1;
-        setTimeout(this.handleNextMove, isComputerTurnBeforeAndAfterMove ? 500 : 0);
+        setTimeout(
+          this.handleNextMove,
+          isComputerTurnBeforeAndAfterMove ? 500 : 0
+        );
       } else {
         if (!isComputerTurnBeforeMove) {
           boardComponent.stop();
-          this.$refs["wrongMoveDialog"].open();
+          this.$refs["expectedMovesDialog"].open({
+            title: this.$i18n.t("modals.wrongMove.text"),
+            mainMove: expectedMainMove,
+            variationMoves: expectedVariationsMoves,
+            mainMoveLabel: this.$i18n.t("modals.cpuMoves.mainMoveLabel"),
+            variationMovesLabel: this.$i18n.t(
+              "modals.cpuMoves.variationsMovesLabel"
+            )
+          });
         }
       }
     },
-    getExpectedMoves() {
+    getExpectedMoves(forReversedTurn) {
       let result = [];
 
       if (this.variationMoveIndex <= this.variationNode.length - 1) {
-        const boardComponent = document.querySelector('loloof64-chessboard');
+        const boardComponent = document.querySelector("loloof64-chessboard");
         const currentNode = this.variationNode[this.variationMoveIndex];
-        const whiteTurn = boardComponent.isWhiteTurn();
+        let whiteTurn = boardComponent.isWhiteTurn();
+        if (forReversedTurn) whiteTurn = ! whiteTurn;
 
         const moveSan = currentNode.move;
         const mainMove = {
           san: moveSan,
-          fan: this.convertMoveSanToMoveFan({moveSan, whiteTurn}),
+          fan: this.convertMoveSanToMoveFan({ moveSan, whiteTurn })
         };
         result.push(mainMove);
 
@@ -410,7 +424,7 @@ export default {
             const moveSan = variationNode.moves[0].move;
             const variation = {
               san: moveSan,
-              fan: this.convertMoveSanToMoveFan({moveSan, whiteTurn}),
+              fan: this.convertMoveSanToMoveFan({ moveSan, whiteTurn })
             };
             result.push(variation);
           });
