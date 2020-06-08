@@ -201,8 +201,8 @@ export default {
 #root {
   display: inline-block;
   color: black;
-  width: 450px;
-  height: 600px;
+  width: 350px;
+  height: 500px;
   overflow-y: scroll;
 }
 
@@ -219,6 +219,6 @@ export default {
 
 #controlsRow {
   position: fixed;
-  transform: translateX(15px) translateY(-50px);
+  transform: translateX(-25px) translateY(-50px);
 }
 </style>

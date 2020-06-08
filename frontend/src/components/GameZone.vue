@@ -1,8 +1,8 @@
 <template>
   <v-row fluid class="white">
-    <v-col>
+    <v-col id="boardZone">
       <loloof64-chessboard
-        size="600"
+        size="500"
         white_cell_color="navajowhite"
         black_cell_color="peru"
         background="brown"
@@ -19,7 +19,7 @@
       />
     </v-col>
 
-    <v-col>
+    <v-col id="historyZone">
       <history ref="history" :history="orderedHistory" @position_requested="setPosition($event)" />
     </v-col>
 
@@ -156,9 +156,6 @@ export default {
       }
     },
     doStartNewGame() {
-      ///////////////////////////////////////////////////////////////////////////////
-      // Production mode, use window.backend.TextFileManager.GetTextFileContent()
-      ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
         "/home/laurent-bernabe/Documents/Echecs/Positions/CoursDanielRensch/Endgames And Tactics Conversion Kit/lesson01.pgn"
       ).then(async content => {
@@ -537,5 +534,13 @@ export default {
   left: 25%;
   width: 50%;
   height: 50%;
+}
+
+#boardZone {
+  margin: 20px;
+}
+
+#historyZone {
+  margin: 50px 20px;
 }
 </style>

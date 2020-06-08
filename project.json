@@ -1,6 +1,6 @@
 {
  "name": "Chess Pgn Reviser",
- "description": "Enter your project description",
+ "description": "Load a chess PGN file and train yourself with it.",
  "author": {
   "name": "Laurent Bernabe",
   "email": "laurent.bernabe@gmail.com"
