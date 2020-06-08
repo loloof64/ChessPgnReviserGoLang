@@ -373,13 +373,13 @@ export default {
 
       if (isMainMove) {
         this.variationMoveIndex++;
-        this.handleNextMove();
+        setTimeout(this.handleNextMove, isComputerTurn ? 500 : 0);
       } else if (playedVariationIndex >= 0) {
         this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
           playedVariationIndex
         ].moves;
         this.variationMoveIndex = 1;
-        this.handleNextMove();
+        setTimeout(this.handleNextMove, isComputerTurn ? 500 : 0);
       } else {
         if (!isComputerTurn) {
           boardComponent.stop();
