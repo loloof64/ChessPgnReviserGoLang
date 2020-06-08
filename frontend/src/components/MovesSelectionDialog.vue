@@ -1,17 +1,17 @@
 <template>
-  <v-dialog v-model="opened" persistent max-width="300">
+  <v-dialog v-model="opened" persistent max-width="500">
     <v-card>
       <v-card-title class="headline">{{title}}</v-card-title>
       <div class="move-block d-flex justify-center align-center">
         <v-col>
           <span>{{mainMoveLabel}}</span>
-          <span @click="handleMainMoveSelected()">{{mainMove}}</span>
+          <span @click="handleMainMoveSelected()">{{mainMove.fan}}</span>
         </v-col>
       </div>
       <div id="movesZone" class="move-block d-flex justify-center align-center">
-        <v-col v-for="move in variationMoves" :key="move">
+        <v-col v-for="move in variationMoves" :key="move.san">
           <span>{{variationMovesLabel}}</span>
-          <span @click="handleVariationMoveSelected(move)">{{move}}</span>
+          <span @click="handleVariationMoveSelected(move.san)">{{move.fan}}</span>
         </v-col>
       </div>
     </v-card>
@@ -50,7 +50,7 @@ export default {
     },
     handleMainMoveSelected() {
       this.opened = false;
-      this.$emit("move-selected", this.mainMove);
+      this.$emit("move-selected", this.mainMove.san);
     },
     handleVariationMoveSelected(move) {
       this.opened = false;
@@ -65,9 +65,6 @@ export default {
   background-color: white;
   color: black;
 }
-.move-block {
-    width: 250px;
-}
 
 #movesZone {
   overflow: scroll;
@@ -76,7 +73,8 @@ export default {
 
 span {
     display: block;
-    width: 150px;
+    width: 300px;
     text-align: center;
+    font-size: 30px;
 }
 </style>

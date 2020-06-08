@@ -159,7 +159,7 @@ export default {
       // Production mode, use window.backend.TextFileManager.GetTextFileContent()
       ///////////////////////////////////////////////////////////////////////////////
       window.backend.TextFileManager.GetTextFileContentWithPathProviden(
-        "/home/laurent-bernabe/Documents/temp/pgn/PgnDroitsRoot.pgn"
+        "/home/laurent-bernabe/Documents/temp/pgn/ItalianGame.pgn"
       ).then(async content => {
         if (content != "#ErrorReadingFile") {
           const pgnGamesContents = await this.splitPgn(content);
@@ -365,10 +365,10 @@ export default {
       allMoves.shift();
       const expectedVariationsMoves = allMoves;
 
-      const isMainMove = playedMoveSan === expectedMainMove;
+      const isMainMove = playedMoveSan === expectedMainMove.san;
       const playedVariationIndex = expectedVariationsMoves
         ? expectedVariationsMoves.findIndex(
-            currentVariation => currentVariation === playedMoveSan
+            currentVariation => currentVariation.san === playedMoveSan
           )
         : -1;
 
@@ -392,14 +392,24 @@ export default {
       let result = [];
 
       if (this.variationMoveIndex <= this.variationNode.length - 1) {
+        const boardComponent = document.querySelector('loloof64-chessboard');
         const currentNode = this.variationNode[this.variationMoveIndex];
+        const whiteTurn = boardComponent.isWhiteTurn();
 
-        const mainMove = currentNode.move;
+        const moveSan = currentNode.move;
+        const mainMove = {
+          san: moveSan,
+          fan: this.convertMoveSanToMoveFan({moveSan, whiteTurn}),
+        };
         result.push(mainMove);
 
         if (currentNode.ravs) {
           currentNode.ravs.forEach(variationNode => {
-            const variation = variationNode.moves[0].move;
+            const moveSan = variationNode.moves[0].move;
+            const variation = {
+              san: moveSan,
+              fan: this.convertMoveSanToMoveFan({moveSan, whiteTurn}),
+            };
             result.push(variation);
           });
         }
@@ -444,7 +454,7 @@ export default {
         });
       } else {
         const boardComponent = document.querySelector("loloof64-chessboard");
-        boardComponent.playMoveSan(expectedMainMove);
+        boardComponent.playMoveSan(expectedMainMove.san);
       }
     },
     handleComputerMoveSelected(playedMoveSan) {
@@ -458,12 +468,12 @@ export default {
         allMoves.shift();
         const expectedVariationsMoves = allMoves;
 
-        if (playedMoveSan === expectedMainMove) {
+        if (playedMoveSan === expectedMainMove.san) {
           this.variationMoveIndex++;
           this.handleNextMove();
         } else {
           const playedVariationIndex = expectedVariationsMoves.findIndex(
-            moveToCompare => moveToCompare === playedMoveSan
+            moveToCompare => moveToCompare.san === playedMoveSan
           );
           const isAMatchingVaration = playedVariationIndex >= 0;
           if (isAMatchingVaration) {
@@ -476,6 +486,25 @@ export default {
           }
         }
       }, 400);
+    },
+    convertMoveSanToMoveFan({ moveSan, whiteTurn }) {
+      moveSan = moveSan
+        .replace(/K/g, whiteTurn ? "\u2654" : "\u265A")
+        .normalize("NFKC");
+      moveSan = moveSan
+        .replace(/Q/g, whiteTurn ? "\u2655" : "\u265B")
+        .normalize("NFKC");
+      moveSan = moveSan
+        .replace(/R/g, whiteTurn ? "\u2656" : "\u265C")
+        .normalize("NFKC");
+      moveSan = moveSan
+        .replace(/B/g, whiteTurn ? "\u2657" : "\u265D")
+        .normalize("NFKC");
+      moveSan = moveSan
+        .replace(/N/g, whiteTurn ? "\u2658" : "\u265E")
+        .normalize("NFKC");
+
+      return moveSan;
     }
   },
   computed: {
