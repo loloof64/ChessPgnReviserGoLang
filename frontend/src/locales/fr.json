@@ -49,7 +49,7 @@
         "error": {
             "title": "Error",
             "file_reading": "Echec de lecture du fichier !",
-            "pgn_parsing": "Echec d'interprétation du contenu du PGN !"
+            "pgn_parsing": "Echec d'interprétation du contenu de la partie !"
         }
     },
     "gameFinished": {

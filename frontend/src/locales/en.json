@@ -49,7 +49,7 @@
         "error": {
             "title": "Error",
             "file_reading": "Failed to read selected file !",
-            "pgn_parsing": "Failed to parse pgn content !"
+            "pgn_parsing": "Failed to parse game content !"
         }
     },
     "gameFinished": {

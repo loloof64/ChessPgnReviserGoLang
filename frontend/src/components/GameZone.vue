@@ -325,8 +325,10 @@ export default {
       return results;
     },
     startGameNextProcess(pgnData) {
-      this.gameData = pgnData;
-      this.$refs["playerTypesSelection"].open();
+      if (pgnData) {
+        this.gameData = pgnData;
+        this.$refs["playerTypesSelection"].open();
+      }
     },
     startGameLastProcess({ white_computer, black_computer }) {
       this.white_computer = white_computer;
