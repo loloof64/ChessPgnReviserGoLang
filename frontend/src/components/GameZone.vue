@@ -6,8 +6,8 @@
         white_cell_color="navajowhite"
         black_cell_color="peru"
         background="brown"
-        :white_player_human="!white_computer"
-        :black_player_human="!black_computer"
+        :white_player_human="white_computer !== true"
+        :black_player_human="black_computer !== true"
         :reversed="board_reversed"
         :promotion_dialog_title="promotion_dialog_title"
         @checkmate="handleCheckmate($event)"
@@ -61,6 +61,11 @@
 
     <player-types-selection ref="playerTypesSelection" @validated="startGameLastProcess" />
 
+    <moves-selection-dialog
+      ref="cpuMovesSelectionDialog"
+      @move-selected="handleComputerMoveSelected"
+    />
+
     <simple-snack-bar ref="snackBar" />
   </v-row>
 </template>
@@ -71,6 +76,7 @@ import SimpleSnackBar from "./SimpleSnackBar";
 import MovesHistory from "./MovesHistory";
 import PgnGameSelector from "./PgnGameSelector";
 import PlayerTypesSelection from "./PlayerTypesSelection";
+import MovesSelectionDialog from "./MovesSelectionDialog";
 
 /*
     History should be something like (here simplified)
@@ -132,7 +138,8 @@ export default {
       variationNode: undefined,
       variationMoveIndex: 0,
       white_computer: false,
-      black_computer: false
+      black_computer: false,
+      isComputerMove: false
     };
   },
   methods: {
@@ -326,49 +333,67 @@ export default {
     startGameLastProcess({ white_computer, black_computer }) {
       this.white_computer = white_computer;
       this.black_computer = black_computer;
-      this.variationNode = this.gameData.moves;
-      this.variationMoveIndex = 0;
-      const startupPosition = this.gameData.startupPosition;
-      const boardComponent = document.querySelector("loloof64-chessboard");
-      boardComponent.newGame(startupPosition);
 
-      this.$refs["history"].clearSelection();
-      this.history = [];
-      this.updateOrderedHistory();
+      setTimeout(() => {
+        this.variationNode = this.gameData.moves;
+        this.variationMoveIndex = 0;
+        const startupPosition = this.gameData.startupPosition;
+        const boardComponent = document.querySelector("loloof64-chessboard");
+        boardComponent.newGame(startupPosition);
+
+        this.$refs["history"].clearSelection();
+        this.history = [];
+        this.updateOrderedHistory();
+
+        const whiteTurn = boardComponent.isWhiteTurn();
+        this.isComputerMove =
+          (whiteTurn === true && white_computer === true) ||
+          (whiteTurn === false && black_computer === true);
+
+        if (this.isComputerMove) this.makeComputerPlayNextMove();
+      }, 400);
     },
     handleMoveDone(event) {
-      const moveObject = event.detail.moveObject;
-      const playedMoveSan = moveObject.moveSan;
-      this.addMoveToHistory(moveObject);
+      const handleMoveDoneLogic = () => {
+        const moveObject = event.detail.moveObject;
+        const playedMoveSan = moveObject.moveSan;
+        this.addMoveToHistory(moveObject);
 
-      let allMoves = this.getExpectedMoves();
+        let allMoves = this.getExpectedMoves();
 
+        const expectedMainMove = allMoves[0];
+        allMoves.shift();
+        const expectedVariationsMoves = allMoves;
 
-      const expectedMainMove = allMoves[0];
-      allMoves.shift();
-      const expectedVariationsMoves = allMoves;
+        const isMainMove = playedMoveSan === expectedMainMove;
+        const playedVariationIndex = expectedVariationsMoves
+          ? expectedVariationsMoves.findIndex(
+              currentVariation => currentVariation === playedMoveSan
+            )
+          : -1;
 
-      const isMainMove = playedMoveSan === expectedMainMove;
-      const playedVariationIndex = expectedVariationsMoves
-        ? expectedVariationsMoves.findIndex(
-            currentVariation => currentVariation === playedMoveSan
-          )
-        : -1;
+        if (isMainMove) {
+          this.variationMoveIndex++;
+          this.isComputerMove = !this.isComputerMove;
+          this.handleNextMove();
+        } else if (playedVariationIndex >= 0) {
+          this.variationNode = this.variationNode[this.variationMoveIndex].ravs[
+            playedVariationIndex
+          ].moves;
+          this.variationMoveIndex = 1;
+          this.isComputerMove = !this.isComputerMove;
 
-      if (isMainMove) {
-        this.variationMoveIndex++;
-        this.handleNextMove();
-      } else if (playedVariationIndex >= 0) {
-        this.variationNode = this.variationNode[this.variationMoveIndex].ravs[playedVariationIndex].moves;
-        this.variationMoveIndex = 1;
+          this.handleNextMove();
+        } else {
+          const boardComponent = document.querySelector("loloof64-chessboard");
+          boardComponent.stop();
 
-        this.handleNextMove();
-      } else {
-        const boardComponent = document.querySelector("loloof64-chessboard");
-        boardComponent.stop();
+          this.$refs["wrongMoveDialog"].open();
+        }
+      };
 
-        this.$refs['wrongMoveDialog'].open();
-      }
+      // We need to let the board update its internal state
+      setTimeout(handleMoveDoneLogic, 600);
     },
     getExpectedMoves() {
       let result = [];
@@ -392,10 +417,40 @@ export default {
       if (noMoreMove) {
         const boardComponent = document.querySelector("loloof64-chessboard");
         boardComponent.stop();
-        
-        this.$refs['noMoreMoveDialog'].open();
+
+        this.$refs["noMoreMoveDialog"].open();
+      } else {
+        if (this.isComputerMove) this.makeComputerPlayNextMove();
       }
     },
+    makeComputerPlayNextMove() {
+      let allMoves = this.getExpectedMoves();
+
+      const expectedMainMove = allMoves[0];
+      allMoves.shift();
+      const expectedVariationsMoves = allMoves;
+
+      if (expectedVariationsMoves.length > 0) {
+        this.$refs["cpuMovesSelectionDialog"].open({
+          title: this.$i18n.t("modals.cpuMoves.title"),
+          mainMove: expectedMainMove,
+          variationMoves: expectedVariationsMoves,
+          mainMoveLabel: this.$i18n.t("modals.cpuMoves.mainMoveLabel"),
+          variationMovesLabel: this.$i18n.t(
+            "modals.cpuMoves.variationsMovesLabel"
+          )
+        });
+      } else {
+        const boardComponent = document.querySelector("loloof64-chessboard");
+        boardComponent.playMoveSan(expectedMainMove);
+
+        this.isComputerMove = !this.isComputerMove;
+      }
+    },
+    handleComputerMoveSelected(playedMoveSan) {
+      const boardComponent = document.querySelector("loloof64-chessboard");
+      boardComponent.playMoveSan(playedMoveSan);
+    }
   },
   computed: {
     promotion_dialog_title() {
@@ -407,7 +462,8 @@ export default {
     "simple-snack-bar": SimpleSnackBar,
     history: MovesHistory,
     "pgn-game-selector": PgnGameSelector,
-    "player-types-selection": PlayerTypesSelection
+    "player-types-selection": PlayerTypesSelection,
+    "moves-selection-dialog": MovesSelectionDialog
   }
 };
 </script>

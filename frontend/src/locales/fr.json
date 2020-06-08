@@ -41,9 +41,14 @@
             "title": "Mauvais coup",
             "text": "Ce n'était pas un coup attendu !"
         },
+        "cpuMoves": {
+            "title": "Veuillez choisir le coup de l'ordinateur :",
+            "mainMoveLabel": "Ligne principale",
+            "variationsMovesLabel": "Variantes"
+        },
         "error": {
             "title": "Error",
-            "file_reading": "Failed to read selected file !",
+            "file_reading": "Echec de lecture du fichier !",
             "pgn_parsing": "Echec d'interprétation du contenu du PGN !"
         }
     },

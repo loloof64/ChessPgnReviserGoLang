@@ -41,6 +41,11 @@
             "title": "Wrong move",
             "text": "This was not an expected move !"
         },
+        "cpuMoves": {
+            "title": "Select the computer move :",
+            "mainMoveLabel": "Main line",
+            "variationsMovesLabel": "Variations"
+        },
         "error": {
             "title": "Error",
             "file_reading": "Failed to read selected file !",
